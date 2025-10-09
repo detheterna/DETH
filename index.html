@@ -110,11 +110,20 @@
   /* Under-stage meta */
   .kicker{
     text-align: center;
-    font-family: "Courier New", Courier, monospace;
-    font-weight: 700;
+    font-family: "Times New Roman", Times, serif;
+    font-weight: 100;
     letter-spacing: .08em;
-    color: #e0dee6;
+    color: #999;
     margin: 6px 0 6px 0;
+  }
+  .kicker-link {
+   font-family: serif;
+   color: #999;
+   text-decoration: none;
+   transition: color 0.25s;
+  }
+  .kicker-link:hover {
+   color: #76ffb0;
   }
 
   /* Social grid: 3 x 1, 50x50 icons */
@@ -162,7 +171,9 @@
 
     <!-- Under-stage info -->
     <section class="container">
-      <p class="kicker">DIMINISHER — OUT NOW</p>
+<p class="kicker">
+  <a href="https://your-bandcamp-link.com" class="kicker-link">DIMINISHER — OUT NOW</a>
+</p>
 
       <nav class="social-grid" aria-label="Social links">
         <a href="#" aria-label="YouTube">
@@ -178,8 +189,10 @@
 
       <!-- Drop-in HTML slot (safe, isolated) -->
       <div id="custom-html" class="custom-slot">
+	<p style="text-align:center; color:#333; font-family:serif; font-size:0.9rem; margin-top:20px;">
+  	© DETH ETERNA<br>The stars are falling.
+	</p>
         <!-- Add any HTML here: <img>, <p>, <video>, <div>, etc. -->
-        <p>DETH</p>
       </div>
     </section>
 
