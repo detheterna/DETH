@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>DE△TH ETERNA◣ — Upward ASCII Fall (Linked)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --page-black: #000000;
+    --top-tint:   #2a1d2f;
+    --mid-tint:   #1b1420;
+    --bot-tint:   #0c0a0d;
+    --title-color:#76ffb0;
+  }
+
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--page-black);
+    color: #cfcdd5;
+  }
+
+  /* Page layout */
+  .wrap{
+    min-height: 100svh;
+    display: grid;
+    grid-auto-rows: max-content;
+    justify-items: center;
+    gap: 18px;
+    padding: 24px 0 10vh;
+  }
+
+  /* Width lock for blocks below the stage */
+  .container {
+    width: min(78vw, 880px);
+  }
+
+  /* Clickable stage link */
+  .stage-link{
+    display: block;
+    width: min(78vw, 880px);
+    text-decoration: none; /* no underline */
+    outline-offset: 4px;
+  }
+  .stage-link:focus-visible { outline: 2px solid #76ffb0; }
+
+  /* 3:4 animation stage */
+  .stage{
+    aspect-ratio: 3 / 4;
+    position: relative;
+    background: linear-gradient(
+      to bottom,
+      var(--top-tint) 0%,
+      var(--mid-tint) 35%,
+      var(--bot-tint) 100%
+    );
+    overflow: hidden;
+    isolation: isolate;
+    contain: layout paint;
+  }
+
+  canvas#ascii{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* ensure no text fallback ever displays */
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  /* Centered title overlay (single render pass) */
+  .title{
+    position: absolute; inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .title span{
+    font-family: "Courier New", Courier, monospace;
+    font-size: clamp(18px, 5vw, 44px);
+    letter-spacing: 0.08em;
+    color: var(--title-color);
+    opacity: 0.15;
+    text-align: center;
+    mix-blend-mode: normal;
+    will-change: contents, transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  /* Subtle CRT scanlines (optional) */
+  .scanlines{ position:relative; }
+  .scanlines::before{
+    content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.035) 0px,
+      rgba(255,255,255,0.035) 1px,
+      transparent 1px, transparent 3px
+    );
+    mix-blend-mode: soft-light;
+  }
+  @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:.985} 77%{opacity:.97} 88%{opacity:.992} }
+  .flicker{ animation: flicker 3.2s infinite; }
+
+  /* Under-stage meta */
+  .kicker{
+    text-align: center;
+    font-family: "Courier New", Courier, monospace;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: #e0dee6;
+    margin: 6px 0 6px 0;
+  }
+
+  /* Social grid: 3 x 1, 50x50 icons */
+  .social-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 50px);
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin: 6px auto 8px;
+  }
+  .social-grid a{
+    display: inline-grid;
+    width: 50px; height: 50px;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: #0b0b0d;
+  }
+  .social-grid img{
+    width: 50px; height: 50px;
+    display: block; object-fit: cover;
+  }
+
+  /* Custom HTML drop-in area */
+  .custom-slot{
+    margin-top: 10px;
+    border-top: 1px dashed rgba(255,255,255,0.18);
+    padding-top: 12px;
+    min-height: 24px; /* visible target even when empty */
+  }
+</style>
+</head>
+<body>
+  <main class="wrap">
+
+    <!-- Entire stage is a link (Bandcamp target to be added) -->
+    <a class="stage-link" href="" aria-label="Open Bandcamp">
+      <section class="stage scanlines flicker" id="stage">
+        <canvas id="ascii"></canvas>
+        <div class="title">
+          <span id="title" data-text="DE△TH ETERNA◣">DE△TH ETERNA◣</span>
+        </div>
+      </section>
+    </a>
+
+    <!-- Under-stage info -->
+    <section class="container">
+      <p class="kicker">DIMINISHER — OUT NOW</p>
+
+      <nav class="social-grid" aria-label="Social links">
+        <a href="#" aria-label="YouTube">
+          <img src="youtube-50.png" alt="YouTube">
+        </a>
+        <a href="#" aria-label="Instagram">
+          <img src="instagram-50.png" alt="Instagram">
+        </a>
+        <a href="mailto:someone@example.com" aria-label="Email">
+          <img src="gmail-50.png" alt="Email">
+        </a>
+      </nav>
+
+      <!-- Drop-in HTML slot (safe, isolated) -->
+      <div id="custom-html" class="custom-slot">
+        <!-- Add any HTML here: <img>, <p>, <video>, <div>, etc. -->
+      </div>
+    </section>
+
+  </main>
+
+<script>
+/* =========================================================
+   SETTINGS — tweak values here
+   ========================================================= */
+const SETTINGS = {
+  /* ASCII field */
+  cols: 92,
+  charset: " .'`^,:;Il!i><~+_-?][}{1)(|\\/*tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+  palette: ["#c7c6cc","#a9a7af","#8a8891","#6b6972","#4c4752","#352c3b","#201822"],
+  accentGreen: "#76ffb0",
+  speed: 0.10,
+  warpAmplitude: 1.05,
+  warpFrequency: 0.35,
+  pulseAmplitude: 0.35,
+  greenSparkleRate: 0.012,
+
+  /* Title glitch (Courier) */
+  titleText: "DE△TH ETERNA◣",
+  titleGlitchProbabilityPerSecond: 0.80,
+  titleGlitchDurationMs: 800,
+  titleGlitchChars: " ░▒▓/\\|_-=+*#%&$0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ△◣",
+
+  /* Performance */
+  pixelRatioCap: 2,
+};
+/* ======================================================= */
+
+const canvas = document.getElementById('ascii');
+const ctx = canvas.getContext('2d', { alpha: false });
+
+let cols, rows, cellW, cellH, fontSize;
+let t = 0;
+
+function resize(){
+  const rect = document.getElementById('stage').getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, SETTINGS.pixelRatioCap);
+
+  canvas.width  = Math.floor(rect.width  * dpr);
+  canvas.height = Math.floor(rect.height * dpr);
+  canvas.style.width  = rect.width + "px";
+  canvas.style.height = rect.height + "px";
+
+  cols = SETTINGS.cols;
+  cellW = (canvas.width / cols);
+  fontSize = Math.max(10, Math.round(cellW * 0.95));
+  cellH = Math.round(fontSize * 1.9);
+  rows = Math.floor(canvas.height / cellH);
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.font = fontSize + "px 'Courier New', monospace";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "#fff";
+}
+addEventListener('resize', resize, { passive: true });
+resize();
+
+function n2(x,y,t){
+  return Math.sin(x*0.13 + t*0.007) + Math.cos(y*0.21 - t*0.009) + Math.sin((x+y)*0.031 + t*0.004);
+}
+
+function draw(){
+  const tr = ctx.getTransform();
+  const cw = canvas.width  / (tr.a || 1);
+  const ch = canvas.height / (tr.d || 1);
+
+  ctx.clearRect(0,0,cw,ch);
+
+  const pulse = 1 + Math.sin(t*0.02) * SETTINGS.pulseAmplitude;
+
+  for(let gy=0; gy<rows+2; gy++){
+    for(let gx=0; gx<cols; gx++){
+      const yBase = ((rows - ((t*SETTINGS.speed) % (rows+2))) + gy) % (rows+2);
+
+      let x = gx * (cw / cols);
+      let y = yBase * (Math.round(fontSize * 1.9));
+
+      const wx = n2(gx*SETTINGS.warpFrequency, y*0.03, t) * SETTINGS.warpAmplitude;
+      const wy = n2(gx*0.07, y*SETTINGS.warpFrequency, t+100) * (SETTINGS.warpAmplitude*0.7);
+      x += wx * 6 * pulse;
+      y += wy * 5 * pulse;
+
+      const d = n2(gx*0.45, y*0.12, t*0.6);
+      const ci = Math.floor(((d+3)/6) * (SETTINGS.charset.length-1));
+      const chx = SETTINGS.charset[ci];
+
+      const topBias = Math.max(0, 1 - (y / ch));
+      const centerBias = 1 - Math.min(1, Math.abs(x - cw*0.5) / (cw*0.55));
+      let fade = (topBias * 0.85 + centerBias * 0.15);
+
+      const palIdx = Math.min(SETTINGS.palette.length-1, Math.max(0, Math.floor((1-fade)*SETTINGS.palette.length)));
+      let color = SETTINGS.palette[palIdx];
+      if(Math.random() < SETTINGS.greenSparkleRate * fade){
+        color = SETTINGS.accentGreen;
+        fade = Math.min(1, fade + 0.15);
+      }
+
+      ctx.globalAlpha = 0.82*fade + 0.12;
+      ctx.fillStyle = color;
+      ctx.fillText(chx, x, y);
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  t++;
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+/* -----------------------------
+   TITLE GLITCH (Courier)
+   ----------------------------- */
+const titleEl = document.getElementById('title');
+let glitchActive = false;
+
+function maybeStartGlitch(dt){
+  const prob = SETTINGS.titleGlitchProbabilityPerSecond * (dt/1000);
+  if (!glitchActive && Math.random() < prob){
+    glitchActive = true;
+    const original = SETTINGS.titleText;
+    const chars = SETTINGS.titleGlitchChars;
+    const endAt = performance.now() + SETTINGS.titleGlitchDurationMs;
+
+    (function tick(){
+      if (performance.now() >= endAt){
+        titleEl.style.color = 'var(--title-color)';
+        titleEl.textContent = original;
+        glitchActive = false;
+        return;
+      }
+      const out = original.split('').map(c => {
+        if (c === ' ') return c;
+        return (Math.random() < 0.65) ? chars[Math.floor(Math.random()*chars.length)] : c;
+      }).join('');
+      titleEl.style.color = 'var(--title-color)';
+      titleEl.textContent = out;
+      requestAnimationFrame(tick);
+    })();
+  }
+}
+
+let last = performance.now();
+(function titleLoop(now){
+  const dt = now - last; last = now;
+  maybeStartGlitch(dt);
+  requestAnimationFrame(titleLoop);
+})(last);
+
+titleEl.textContent = SETTINGS.titleText;
+</script>
+</body>
+</html>
